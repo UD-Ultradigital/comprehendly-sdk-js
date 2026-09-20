@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: Comprehendly Forms Integration API
+  version: '1'
+  description: Partner gateway. Auth is a short-lived token from integration_exchange, not a user JWT.
+servers:
+  - url: https://api.stepcare.app/functions/v1
+paths:
+  /integration_exchange:
+    post:
+      operationId: exchange
+      summary: Exchange a publishable key for a short-lived access token
+      parameters:
+        - in: header
+          name: Origin
+          required: true
+          schema:
+            type: string
+          description: Must match an allowed origin on the publishable key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key:
+                  type: string
+                audience:
+                  type: string
+                  default: stepcare-embed
+                requested_scopes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                  tenant_id:
+                    type: string
+                  scopes:
+                    type: array
+                    items:
+                      type: string
+  /integration_gateway:
+    post:
+      operationId: gateway
+      summary: Invoke a Forms integration operation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [access_token, operation]
+              properties:
+                access_token:
+                  type: string
+                operation:
+                  type: string
+                  enum:
+                    - session.resolve
+                    - forms.catalog.list
+                    - forms.page.get
+                    - forms.voice.start
+                    - forms.submissions.list
+                    - forms.submissions.get
+                    - forms.submissions.save
+                    - session.prepare
+                    - session.get
+                    - session.complete
+                params:
+                  type: object
+      responses:
+        '200':
+          description: Envelope
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: {}
+                  request_id:
+                    type: string

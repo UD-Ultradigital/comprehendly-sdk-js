@@ -1,0 +1,20 @@
+{
+  "name": "@comprehendly/forms",
+  "version": "0.1.0",
+  "description": "Comprehendly Forms JS SDK — catalog, page, FieldStore, iframe widgets",
+  "type": "module",
+  "main": "src/index.js",
+  "files": [
+    "src",
+    "spec"
+  ],
+  "scripts": {
+    "demo": "python3 -m http.server 4173 --directory demo",
+    "test": "node --test src/field-store.test.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flobo79/comprehendly-sdk-js.git"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docs.comprehendly.nz/spec/field-patch.schema.json",
+  "title": "ComprehendlyFieldPatch",
+  "type": "object",
+  "required": ["field_name", "value", "source"],
+  "properties": {
+    "element_id": { "type": "string", "description": "Page element id (preferred host bind key)" },
+    "field_name": { "type": "string", "description": "Engine and submission key" },
+    "value": {},
+    "source": { "enum": ["user", "voice", "bind", "hydrate"] },
+    "provenance": { "type": ["object", "null"] }
+  }
+}

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Comprehendly JS SDK demo</title>
+    <style>
+      :root { font-family: ui-sans-serif, system-ui, sans-serif; color: #102a2a; }
+      body { max-width: 880px; margin: 2rem auto; padding: 0 1rem; }
+      h1 { font-size: 1.25rem; }
+      section { border: 1px solid #c5d9d9; border-radius: 12px; padding: 1rem 1.25rem; margin: 1rem 0; }
+      label { display: block; font-size: 0.85rem; margin: 0.6rem 0 0.2rem; }
+      input, textarea, select, button { font: inherit; }
+      input, textarea, select { width: 100%; padding: 0.4rem 0.5rem; }
+      button { margin-top: 0.75rem; padding: 0.45rem 0.8rem; }
+      pre { background: #f4f8f8; padding: 0.75rem; overflow: auto; font-size: 0.8rem; }
+      .err { color: #a31; }
+    </style>
+  </head>
+  <body>
+    <h1>Comprehendly JS SDK — generated + bound</h1>
+    <p>
+      Copy <code>demo/env.example.js</code> to <code>demo/env.js</code>, paste a
+      <code>pk_*</code> key, allowlist this origin, then reload.
+    </p>
+    <p id="status">Loading…</p>
+    <section>
+      <h2>Generated</h2>
+      <form id="generated"></form>
+    </section>
+    <section>
+      <h2>Bound (host fields)</h2>
+      <p>Same store. Host markup; SDK patches by <code>element.id</code>.</p>
+      <div id="bound"></div>
+    </section>
+    <section>
+      <h2>Store</h2>
+      <pre id="dump">{}</pre>
+    </section>
+    <script type="module">
+      import { Comprehendly } from '../src/index.js'
+
+      async function main() {
+        const status = document.getElementById('status')
+        let env
+        try {
+          await import('./env.js')
+          env = window.__COMPREHENDLY_DEMO__
+        } catch {
+          status.className = 'err'
+          status.textContent = 'Missing demo/env.js — copy env.example.js'
+          return
+        }
+        const client = new Comprehendly({
+          publishableKey: env.publishableKey,
+          origin: env.origin || window.location.origin
+        })
+        try {
+          await client.exchange()
+        } catch (e) {
+          status.className = 'err'
+          status.textContent = 'Exchange failed: ' + (e.message || e)
+          return
+        }
+        let pageId = env.pageId
+        if (!pageId) {
+          const catalog = await client.catalog.list()
+          const first = (catalog.forms || [])[0]
+          if (!first) {
+            status.className = 'err'
+            status.textContent = 'No published forms in catalog'
+            return
+          }
+          pageId = first.id
+        }
+        const page = await client.page.get(pageId)
+        status.textContent = `Loaded ${page.page_title || pageId}`
+
+        const generated = document.getElementById('generated')
+        const bound = document.getElementById('bound')
+        const dump = document.getElementById('dump')
+        const refresh = () => {
+          dump.textContent = JSON.stringify(client.store.values(), null, 2)
+        }
+        client.store.subscribe(refresh)
+
+        for (const field of client.store.fields()) {
+          if (!field.generated) continue
+          const lab = document.createElement('label')
+          lab.textContent = field.label
+          const input =
+            field.inputType === 'textarea'
+              ? document.createElement('textarea')
+              : field.inputType === 'boolean'
+                ? Object.assign(document.createElement('input'), { type: 'checkbox' })
+                : document.createElement('input')
+          if (input.tagName === 'INPUT' && field.inputType === 'number') input.type = 'number'
+          if (input.tagName === 'INPUT' && field.inputType === 'date') input.type = 'date'
+          input.addEventListener('input', () => {
+            const value = input.type === 'checkbox' ? input.checked : input.value
+            client.store.set({ fieldName: field.fieldName, value, source: 'user' })
+          })
+          client.store.bind({ elementId: field.elementId }, (v) => {
+            if (input.type === 'checkbox') input.checked = Boolean(v)
+            else if (document.activeElement !== input) input.value = v ?? ''
+          })
+          lab.appendChild(input)
+          generated.appendChild(lab)
+
+          const hostLab = document.createElement('label')
+          hostLab.textContent = field.label + ' (host)'
+          const host = document.createElement('input')
+          host.placeholder = field.fieldName
+          client.store.bind({ elementId: field.elementId }, (v) => {
+            if (document.activeElement !== host) host.value = v ?? ''
+          })
+          host.addEventListener('input', () => {
+            client.store.set({
+              elementId: field.elementId,
+              value: host.value,
+              source: 'bind'
+            })
+          })
+          hostLab.appendChild(host)
+          bound.appendChild(hostLab)
+        }
+        refresh()
+      }
+      main()
+    </script>
+  </body>
+</html>
