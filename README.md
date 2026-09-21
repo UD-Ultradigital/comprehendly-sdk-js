@@ -239,8 +239,6 @@ Do not send labels as keys. Do not send `element.id` values as submission keys.
 | `client.submissions.save(payload)` | method | Calls `forms.submissions.save` |
 | `client.submissions.get(submissionId)` | method | Calls `forms.submissions.get` |
 
-`src/index.js` also reads `functionsUrl` and `anonKey` from constructor options for platform wiring. Treat those as unsupported non-public overrides rather than application integration settings.
-
 ### `FieldStore` returned by `createFieldStore()` or `client.store`
 
 | Member | Type | Notes |
