@@ -43,7 +43,7 @@ function resolveAllowedPath(pathname) {
   const target = path.resolve(root, `.${pathname}`)
   const base = path.resolve(root, firstSegment)
   if (target !== base && !target.startsWith(`${base}${path.sep}`)) return null
-  return target
+  return { target, base }
 }
 
 const server = createServer(async (req, res) => {
@@ -53,12 +53,12 @@ const server = createServer(async (req, res) => {
       send(res, 400, 'Bad Request')
       return
     }
-    const resolved = resolveAllowedPath(pathname)
-    if (!resolved) {
+    const resolvedPath = resolveAllowedPath(pathname)
+    if (!resolvedPath) {
       send(res, 404, 'Not Found')
       return
     }
-    let filePath = resolved
+    let filePath = resolvedPath.target
     const stat = await fs.stat(filePath)
     if (stat.isDirectory()) {
       if (!pathname.endsWith('/')) {
@@ -77,7 +77,15 @@ const server = createServer(async (req, res) => {
       send(res, 404, 'Not Found')
       return
     }
-    const body = await fs.readFile(filePath)
+    const [realFilePath, realBasePath] = await Promise.all([
+      fs.realpath(filePath),
+      fs.realpath(resolvedPath.base)
+    ])
+    if (realFilePath !== realBasePath && !realFilePath.startsWith(`${realBasePath}${path.sep}`)) {
+      send(res, 404, 'Not Found')
+      return
+    }
+    const body = await fs.readFile(realFilePath)
     const ext = path.extname(filePath).toLowerCase()
     send(res, 200, body, {
       'Content-Length': Buffer.byteLength(body),
