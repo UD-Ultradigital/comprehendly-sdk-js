@@ -1,5 +1,5 @@
 import { createServer } from 'node:http'
-import { readFile, stat } from 'node:fs/promises'
+import { readFile, realpath, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -8,6 +8,7 @@ const envPort = process.env.PORT
 const parsedPort = envPort === undefined ? Number.NaN : Number.parseInt(envPort, 10)
 const PORT = Number.isInteger(parsedPort) && parsedPort >= 1 && parsedPort <= 65535 ? parsedPort : 4173
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const realRepoRoot = await realpath(repoRoot)
 
 const contentTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -35,6 +36,10 @@ function resolvePath(urlPathname) {
     return { statusCode: 403 }
   }
   return { absolutePath }
+}
+
+function isWithinRepoRoot(absolutePath) {
+  return absolutePath === realRepoRoot || absolutePath.startsWith(realRepoRoot + path.sep)
 }
 
 const server = createServer(async (req, res) => {
@@ -75,10 +80,22 @@ const server = createServer(async (req, res) => {
       return
     }
     let { absolutePath } = resolvedPath
+    absolutePath = await realpath(absolutePath)
+    if (!isWithinRepoRoot(absolutePath)) {
+      res.statusCode = 403
+      res.end('Forbidden')
+      return
+    }
 
     let info = await stat(absolutePath)
     if (info.isDirectory()) {
       absolutePath = path.join(absolutePath, 'index.html')
+      absolutePath = await realpath(absolutePath)
+      if (!isWithinRepoRoot(absolutePath)) {
+        res.statusCode = 403
+        res.end('Forbidden')
+        return
+      }
       info = await stat(absolutePath)
     }
 
