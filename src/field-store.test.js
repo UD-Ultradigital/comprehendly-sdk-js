@@ -37,4 +37,22 @@ describe('FieldStore bind', () => {
     store.applyHostMessage({ field_values: { mood: 'low' } })
     assert.equal(store.get('mood'), 'low')
   })
+
+  it('accepts camelCase fieldValues from embed save', () => {
+    const store = createFieldStore()
+    store.loadPage({
+      elements: [
+        {
+          id: 'el-1',
+          type: 'form_field',
+          data: { field_name: 'mood', input_type: 'text', label: 'Mood' }
+        }
+      ]
+    })
+    store.applyHostMessage({
+      type: 'stepcare:submission_saved',
+      fieldValues: { mood: 'ok' }
+    })
+    assert.equal(store.get('mood'), 'ok')
+  })
 })

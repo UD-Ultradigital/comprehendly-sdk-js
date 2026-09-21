@@ -123,7 +123,11 @@ export function createFieldStore() {
     },
     applyHostMessage(data) {
       if (!data || typeof data !== 'object') return
-      const bag = data.field_values || data.values || data.fields
+      const bag =
+        data.field_values ||
+        data.fieldValues ||
+        data.values ||
+        data.fields
       if (bag && typeof bag === 'object') this.hydrate(bag, 'voice')
     }
   }

@@ -32,7 +32,7 @@ Do not bind by label. Resolve `element.id` → current `field_name` after each `
 
 One store per fill session. Voice patches and user edits merge here.
 
-Patch event: `spec/field-patch.schema.json`.
+Voice patches: `stepcare:fields_updated` with `field_values` (and `fieldValues`). Hosts hydrate FieldStore. Native WebView also receives the same payload via `webkit.messageHandlers.comprehendly`.
 
 ## Surfaces
 
