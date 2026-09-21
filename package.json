@@ -9,7 +9,7 @@
     "spec"
   ],
   "scripts": {
-    "demo": "python3 -m http.server 4173 --directory demo",
+    "demo": "node scripts/serve-demo.mjs",
     "test": "node --test src/*.test.js"
   },
   "license": "MIT",
