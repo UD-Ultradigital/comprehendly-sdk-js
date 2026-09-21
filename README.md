@@ -30,10 +30,11 @@ python3 -m http.server 4173 --directory demo
 # open http://localhost:4173
 ```
 
-The demo has two surfaces on the same page:
+The demo has three surfaces on the same page:
 
 - **Generated** — fields rendered from `forms.page.get`
 - **Bound** — a host `<input>` linked by `element.id`
+- **Voice** — hosted fill embed via `mountVoiceBridge` (assistant or silent)
 
 ## Install (app)
 

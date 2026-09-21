@@ -33,11 +33,18 @@
       <div id="bound"></div>
     </section>
     <section>
+      <h2>Voice (hosted bridge)</h2>
+      <p>Loads the Comprehendly fill embed in an iframe. Mic stays on the hosted engine.</p>
+      <button type="button" id="voice-assistant">Assistant</button>
+      <button type="button" id="voice-silent">Silent</button>
+      <div id="voice"></div>
+    </section>
+    <section>
       <h2>Store</h2>
       <pre id="dump">{}</pre>
     </section>
     <script type="module">
-      import { Comprehendly } from '../src/index.js'
+      import { Comprehendly, mountVoiceBridge } from '../src/index.js'
 
       async function main() {
         const status = document.getElementById('status')
@@ -124,6 +131,20 @@
           bound.appendChild(hostLab)
         }
         refresh()
+
+        let voiceHandle
+        const startVoice = (mode) => {
+          if (!client.accessToken) return
+          if (voiceHandle) voiceHandle.destroy()
+          voiceHandle = mountVoiceBridge('#voice', {
+            token: client.accessToken,
+            pageId,
+            mode,
+            store: client.store
+          })
+        }
+        document.getElementById('voice-assistant').onclick = () => startVoice('assistant')
+        document.getElementById('voice-silent').onclick = () => startVoice('silent')
       }
       main()
     </script>

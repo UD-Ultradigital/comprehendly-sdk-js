@@ -110,6 +110,21 @@ export function createFieldStore() {
       return this.subscribe((patch) => {
         if (patch.field_name === fieldName) apply(patch.value)
       })
+    },
+    hydrate(map, source = 'hydrate') {
+      if (!map || typeof map !== 'object') return
+      for (const [fieldName, value] of Object.entries(map)) {
+        try {
+          this.set({ fieldName, value, source })
+        } catch {
+          /* ignore keys that are not on the page */
+        }
+      }
+    },
+    applyHostMessage(data) {
+      if (!data || typeof data !== 'object') return
+      const bag = data.field_values || data.values || data.fields
+      if (bag && typeof bag === 'object') this.hydrate(bag, 'voice')
     }
   }
 }

@@ -96,8 +96,11 @@ export class Comprehendly {
   }
 
   submissions = {
-    save: (payload) => this.gateway('forms.submissions.save', payload)
+    save: (payload) => this.gateway('forms.submissions.save', payload),
+    get: (submissionId) =>
+      this.gateway('forms.submissions.get', { submission_id: submissionId })
   }
 }
 
 export { createFieldStore, fillableFields } from './field-store.js'
+export { voiceBridgeUrl, mountVoiceBridge } from './voice-bridge.js'

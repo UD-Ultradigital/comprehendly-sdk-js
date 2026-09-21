@@ -8,6 +8,7 @@
     "signupUrl": "https://app.comprehendly.nz/signup",
     "formsAppUrl": "https://app.comprehendly.nz",
     "docsUrl": "https://docs.comprehendly.nz",
+    "voiceBridgeUrl": "https://docs.comprehendly.nz/voice-bridge.html",
     "embedScript": "https://sdk.comprehendly.nz/embed/v1/forms.js",
     "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0cGFhdWh6dXFheGx1dXpqc2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkwMzE4NDUsImV4cCI6MjAyNDYwNzg0NX0.KY98XuoxMJAh-Qhb-_ozJzmFoOdI8ZcHqrFBNblf8fo"
   },

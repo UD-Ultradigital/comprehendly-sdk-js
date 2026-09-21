@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "demo": "python3 -m http.server 4173 --directory demo",
-    "test": "node --test src/field-store.test.js"
+    "test": "node --test src/*.test.js"
   },
   "license": "MIT",
   "repository": {
