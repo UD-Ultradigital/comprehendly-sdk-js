@@ -61,6 +61,10 @@ const server = createServer(async (req, res) => {
     let filePath = resolved
     const stat = await fs.stat(filePath)
     if (stat.isDirectory()) {
+      if (!pathname.endsWith('/')) {
+        send(res, 301, '', { Location: `${pathname}/` })
+        return
+      }
       filePath = path.join(filePath, 'index.html')
     }
     const body = await fs.readFile(filePath)
