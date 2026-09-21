@@ -39,7 +39,35 @@ function resolvePath(urlPathname) {
 
 const server = createServer(async (req, res) => {
   try {
-    const url = new URL(req.url || '/', `http://${HOST}:${PORT}`)
+    const method = req.method || 'GET'
+    const requestTarget = req.url || '/'
+
+    if (requestTarget === '*') {
+      if (method === 'OPTIONS') {
+        res.statusCode = 204
+        res.setHeader('Allow', 'GET, HEAD, OPTIONS')
+        res.end()
+      } else {
+        res.statusCode = 400
+        res.end('Bad Request')
+      }
+      return
+    }
+
+    if (!requestTarget.startsWith('/')) {
+      res.statusCode = 400
+      res.end('Bad Request')
+      return
+    }
+
+    if (method !== 'GET' && method !== 'HEAD') {
+      res.statusCode = 405
+      res.setHeader('Allow', 'GET, HEAD')
+      res.end('Method Not Allowed')
+      return
+    }
+
+    const url = new URL(requestTarget, `http://${HOST}:${PORT}`)
     const resolvedPath = resolvePath(url.pathname)
     if (!resolvedPath.absolutePath) {
       res.statusCode = resolvedPath.statusCode
@@ -60,9 +88,14 @@ const server = createServer(async (req, res) => {
       return
     }
 
-    const data = await readFile(absolutePath)
     res.statusCode = 200
     res.setHeader('Content-Type', contentTypes[path.extname(absolutePath)] || 'application/octet-stream')
+    res.setHeader('Content-Length', String(info.size))
+    if (method === 'HEAD') {
+      res.end()
+      return
+    }
+    const data = await readFile(absolutePath)
     res.end(data)
   } catch (error) {
     if (error?.code === 'ENOENT') {
