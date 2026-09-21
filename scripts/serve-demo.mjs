@@ -62,10 +62,13 @@ const server = createServer(async (req, res) => {
     const stat = await fs.stat(filePath)
     if (stat.isDirectory()) {
       if (!pathname.endsWith('/')) {
-        send(res, 301, '', { Location: `${pathname}/` })
+        send(res, 307, '', { Location: `${pathname}/` })
         return
       }
       filePath = path.join(filePath, 'index.html')
+    } else if (pathname.endsWith('/')) {
+      send(res, 404, 'Not Found')
+      return
     }
     const body = await fs.readFile(filePath)
     const ext = path.extname(filePath).toLowerCase()
