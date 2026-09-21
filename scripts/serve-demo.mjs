@@ -13,6 +13,7 @@ const realRepoRoot = await realpath(repoRoot)
 const contentTypes = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml',
@@ -65,6 +66,13 @@ const server = createServer(async (req, res) => {
       return
     }
 
+    if (method === 'OPTIONS') {
+      res.statusCode = 204
+      res.setHeader('Allow', 'GET, HEAD, OPTIONS')
+      res.end()
+      return
+    }
+
     if (method !== 'GET' && method !== 'HEAD') {
       res.statusCode = 405
       res.setHeader('Allow', 'GET, HEAD')
@@ -72,7 +80,14 @@ const server = createServer(async (req, res) => {
       return
     }
 
-    const url = new URL(requestTarget, 'http://localhost')
+    let url
+    try {
+      url = new URL(requestTarget, 'http://localhost')
+    } catch {
+      res.statusCode = 400
+      res.end('Bad Request')
+      return
+    }
     const resolvedPath = resolvePath(url.pathname)
     if (!resolvedPath.absolutePath) {
       res.statusCode = resolvedPath.statusCode
@@ -130,4 +145,7 @@ server.listen(PORT, HOST, () => {
   const address = server.address()
   const boundPort = typeof address === 'object' && address ? address.port : PORT
   console.log(`http://${HOST}:${boundPort}/demo/`)
+  if (HOST !== 'localhost') {
+    console.log(`http://localhost:${boundPort}/demo/`)
+  }
 })
