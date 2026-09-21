@@ -7,6 +7,7 @@ const HOST = '127.0.0.1'
 const envPort = process.env.PORT
 const parsedPort = envPort === undefined ? Number.NaN : Number.parseInt(envPort, 10)
 const PORT = Number.isInteger(parsedPort) && parsedPort >= 1 && parsedPort <= 65535 ? parsedPort : 4173
+const IPV6_HOST = '::1'
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const realRepoRoot = await realpath(repoRoot)
 
@@ -43,7 +44,7 @@ function isWithinRepoRoot(absolutePath) {
   return absolutePath === realRepoRoot || absolutePath.startsWith(realRepoRoot + path.sep)
 }
 
-const server = createServer(async (req, res) => {
+const handleRequest = async (req, res) => {
   try {
     const method = req.method || 'GET'
     const requestTarget = req.url || '/'
@@ -139,13 +140,21 @@ const server = createServer(async (req, res) => {
     res.statusCode = 500
     res.end('Internal Server Error')
   }
-})
+}
+
+const server = createServer(handleRequest)
 
 server.listen(PORT, HOST, () => {
   const address = server.address()
   const boundPort = typeof address === 'object' && address ? address.port : PORT
   console.log(`http://${HOST}:${boundPort}/demo/`)
-  if (HOST !== 'localhost') {
-    console.log(`http://localhost:${boundPort}/demo/`)
-  }
+  console.log(`http://localhost:${boundPort}/demo/`)
+
+  const ipv6Server = createServer(handleRequest)
+  ipv6Server.on('error', (error) => {
+    if (!['EADDRINUSE', 'EAFNOSUPPORT', 'EADDRNOTAVAIL'].includes(error?.code)) {
+      console.error(error)
+    }
+  })
+  ipv6Server.listen(boundPort, IPV6_HOST)
 })
