@@ -143,6 +143,11 @@ const handleRequest = async (req, res) => {
 }
 
 const server = createServer(handleRequest)
+let ipv6Server = null
+
+server.on('close', () => {
+  if (ipv6Server) ipv6Server.close()
+})
 
 server.listen(PORT, HOST, () => {
   const address = server.address()
@@ -150,7 +155,7 @@ server.listen(PORT, HOST, () => {
   console.log(`http://${HOST}:${boundPort}/demo/`)
   console.log(`http://localhost:${boundPort}/demo/`)
 
-  const ipv6Server = createServer(handleRequest)
+  ipv6Server = createServer(handleRequest)
   ipv6Server.on('error', (error) => {
     if (!['EADDRINUSE', 'EAFNOSUPPORT', 'EADDRNOTAVAIL'].includes(error?.code)) {
       console.error(error)
