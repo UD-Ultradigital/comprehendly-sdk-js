@@ -4,7 +4,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HOST = '127.0.0.1'
-const PORT = Number(process.env.PORT) || 4173
+const envPort = process.env.PORT
+const parsedPort = envPort === undefined ? Number.NaN : Number.parseInt(envPort, 10)
+const PORT = Number.isInteger(parsedPort) && parsedPort >= 0 && parsedPort <= 65535 ? parsedPort : 4173
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 const contentTypes = {
