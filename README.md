@@ -26,8 +26,8 @@ Then in Comprehendly: publish a form → **Settings → API** → create a publi
 ```bash
 cp demo/env.example.js demo/env.js   # gitignored
 # edit demo/env.js — publishableKey + optional pageId
-python3 -m http.server 4173 --directory demo
-# open http://localhost:4173
+npm run demo
+# open http://localhost:4173/demo/
 ```
 
 The demo has three surfaces on the same page:
