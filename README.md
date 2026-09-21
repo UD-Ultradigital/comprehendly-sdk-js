@@ -225,11 +225,11 @@ Do not send labels as keys. Do not send `element.id` values as submission keys.
 
 | Member | Type | Notes |
 | --- | --- | --- |
-| `new Comprehendly({ publishableKey, origin, functionsUrl, anonKey })` | constructor | Creates a client and `store` |
+| `new Comprehendly({ publishableKey, origin, functionsUrl, anonKey })` | constructor | Creates a client and `store`; `functionsUrl` and `anonKey` are advanced platform overrides, not normal app configuration |
 | `client.publishableKey` | property | The publishable key passed to the constructor |
 | `client.origin` | property | Optional allowlisted origin override |
-| `client.functionsUrl` | property | Integration functions base URL |
-| `client.anonKey` | property | Supabase anon key used for exchange/gateway |
+| `client.functionsUrl` | property | Integration functions base URL; advanced/internal override |
+| `client.anonKey` | property | Supabase anon key used for exchange/gateway; advanced/internal override |
 | `client.accessToken` | property | Set after `exchange()` |
 | `client.store` | property | `FieldStore` instance |
 | `client.exchange()` | method | Exchanges `pk_*` for a short-lived access token |
