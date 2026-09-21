@@ -25,7 +25,12 @@ function getSafePathname(reqUrl) {
   const [rawPath = '/'] = String(reqUrl || '/').split('?')
   const normalizedRawPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`
   const mappedPath = normalizedRawPath === '/' ? '/demo/' : normalizedRawPath
-  const decoded = decodeURIComponent(mappedPath)
+  let decoded
+  try {
+    decoded = decodeURIComponent(mappedPath)
+  } catch {
+    return null
+  }
   if (decoded.split('/').includes('..')) return null
   const normalized = path.posix.normalize(decoded)
   if (normalized === '..' || normalized.startsWith('../')) return null
@@ -74,6 +79,6 @@ const server = createServer(async (req, res) => {
   }
 })
 
-server.listen(port, '127.0.0.1', () => {
+server.listen(port, () => {
   console.log(`http://127.0.0.1:${port}/demo/`)
 })
