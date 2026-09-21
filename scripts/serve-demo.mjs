@@ -5,6 +5,12 @@ import path from 'node:path'
 const port = Number(process.env.PORT) || 4173
 const root = process.cwd()
 const allowed = new Set(['demo', 'src'])
+const allowedBases = new Map([...allowed].map((segment) => [segment, path.resolve(root, segment)]))
+const allowedRealBases = new Map(
+  await Promise.all(
+    [...allowedBases].map(async ([segment, base]) => [segment, await fs.realpath(base)])
+  )
+)
 
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -41,9 +47,9 @@ function resolveAllowedPath(pathname) {
   const firstSegment = pathname.split('/').filter(Boolean)[0]
   if (!allowed.has(firstSegment)) return null
   const target = path.resolve(root, `.${pathname}`)
-  const base = path.resolve(root, firstSegment)
+  const base = allowedBases.get(firstSegment)
   if (target !== base && !target.startsWith(`${base}${path.sep}`)) return null
-  return { target, base }
+  return { target, segment: firstSegment }
 }
 
 const server = createServer(async (req, res) => {
@@ -60,7 +66,7 @@ const server = createServer(async (req, res) => {
     }
     const [realTargetPath, realBasePath] = await Promise.all([
       fs.realpath(resolvedPath.target),
-      fs.realpath(resolvedPath.base)
+      Promise.resolve(allowedRealBases.get(resolvedPath.segment))
     ])
     if (
       realTargetPath !== realBasePath &&
