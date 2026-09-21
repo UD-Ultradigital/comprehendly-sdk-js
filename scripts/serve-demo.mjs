@@ -1,5 +1,5 @@
 import { createServer } from 'node:http'
-import { readFile, realpath, stat } from 'node:fs/promises'
+import { lstat, readFile, realpath, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -76,7 +76,7 @@ const handleRequest = async (req, res) => {
 
     if (method !== 'GET' && method !== 'HEAD') {
       res.statusCode = 405
-      res.setHeader('Allow', 'GET, HEAD')
+      res.setHeader('Allow', 'GET, HEAD, OPTIONS')
       res.end('Method Not Allowed')
       return
     }
@@ -96,17 +96,17 @@ const handleRequest = async (req, res) => {
       return
     }
     let { absolutePath } = resolvedPath
-    let info = await stat(absolutePath)
+    await lstat(absolutePath)
     absolutePath = await realpath(absolutePath)
     if (!isWithinRepoRoot(absolutePath)) {
       res.statusCode = 403
       res.end('Forbidden')
       return
     }
-    info = await stat(absolutePath)
+    let info = await stat(absolutePath)
     if (info.isDirectory()) {
       absolutePath = path.join(absolutePath, 'index.html')
-      info = await stat(absolutePath)
+      await lstat(absolutePath)
       absolutePath = await realpath(absolutePath)
       if (!isWithinRepoRoot(absolutePath)) {
         res.statusCode = 403
