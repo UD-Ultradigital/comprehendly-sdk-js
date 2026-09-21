@@ -65,7 +65,14 @@ const server = createServer(async (req, res) => {
         send(res, 307, '', { Location: `${pathname}/` })
         return
       }
-      filePath = path.join(filePath, 'index.html')
+      const indexPath = path.join(filePath, 'index.html')
+      try {
+        await fs.access(indexPath)
+      } catch {
+        send(res, 404, 'Not Found')
+        return
+      }
+      filePath = indexPath
     } else if (pathname.endsWith('/')) {
       send(res, 404, 'Not Found')
       return
