@@ -21,22 +21,30 @@ const contentTypes = {
 
 function resolvePath(urlPathname) {
   const mappedPath = urlPathname === '/' ? '/demo/index.html' : urlPathname
-  const decodedPath = decodeURIComponent(mappedPath)
+  let decodedPath
+  try {
+    decodedPath = decodeURIComponent(mappedPath)
+  } catch {
+    return { statusCode: 400 }
+  }
   const normalizedPath = path.posix.normalize(decodedPath).replace(/^\/+/, '')
   const absolutePath = path.resolve(repoRoot, normalizedPath)
-  if (absolutePath !== repoRoot && !absolutePath.startsWith(repoRoot + path.sep)) return null
-  return absolutePath
+  if (absolutePath !== repoRoot && !absolutePath.startsWith(repoRoot + path.sep)) {
+    return { statusCode: 403 }
+  }
+  return { absolutePath }
 }
 
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', `http://${HOST}:${PORT}`)
-    let absolutePath = resolvePath(url.pathname)
-    if (!absolutePath) {
-      res.statusCode = 403
-      res.end('Forbidden')
+    const resolvedPath = resolvePath(url.pathname)
+    if (!resolvedPath.absolutePath) {
+      res.statusCode = resolvedPath.statusCode
+      res.end(resolvedPath.statusCode === 400 ? 'Bad Request' : 'Forbidden')
       return
     }
+    let { absolutePath } = resolvedPath
 
     let info = await stat(absolutePath)
     if (info.isDirectory()) {
