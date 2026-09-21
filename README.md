@@ -10,7 +10,7 @@ CDN widget (existing): https://sdk.comprehendly.nz/embed/v1/forms.js
 You need a **Comprehendly tenant** and a **publishable API key** (`pk_test_…` / `pk_live_…`).
 
 ```bash
-git clone https://github.com/flobo79/comprehendly-sdk-js.git
+git clone https://github.com/UD-Ultradigital/comprehendly-sdk-js.git
 cd comprehendly-sdk-js
 ```
 
