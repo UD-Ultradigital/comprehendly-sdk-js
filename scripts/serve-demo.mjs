@@ -58,7 +58,18 @@ const server = createServer(async (req, res) => {
       send(res, 404, 'Not Found')
       return
     }
-    let filePath = resolvedPath.target
+    const [realTargetPath, realBasePath] = await Promise.all([
+      fs.realpath(resolvedPath.target),
+      fs.realpath(resolvedPath.base)
+    ])
+    if (
+      realTargetPath !== realBasePath &&
+      !realTargetPath.startsWith(`${realBasePath}${path.sep}`)
+    ) {
+      send(res, 404, 'Not Found')
+      return
+    }
+    let filePath = realTargetPath
     const stat = await fs.stat(filePath)
     if (stat.isDirectory()) {
       if (!pathname.endsWith('/')) {
@@ -72,20 +83,17 @@ const server = createServer(async (req, res) => {
         send(res, 404, 'Not Found')
         return
       }
-      filePath = indexPath
+      const realIndexPath = await fs.realpath(indexPath)
+      if (realIndexPath !== realBasePath && !realIndexPath.startsWith(`${realBasePath}${path.sep}`)) {
+        send(res, 404, 'Not Found')
+        return
+      }
+      filePath = realIndexPath
     } else if (pathname.endsWith('/')) {
       send(res, 404, 'Not Found')
       return
     }
-    const [realFilePath, realBasePath] = await Promise.all([
-      fs.realpath(filePath),
-      fs.realpath(resolvedPath.base)
-    ])
-    if (realFilePath !== realBasePath && !realFilePath.startsWith(`${realBasePath}${path.sep}`)) {
-      send(res, 404, 'Not Found')
-      return
-    }
-    const body = await fs.readFile(realFilePath)
+    const body = await fs.readFile(filePath)
     const ext = path.extname(filePath).toLowerCase()
     send(res, 200, body, {
       'Content-Length': Buffer.byteLength(body),
