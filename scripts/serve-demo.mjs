@@ -72,7 +72,7 @@ const server = createServer(async (req, res) => {
       return
     }
 
-    const url = new URL(requestTarget, `http://${HOST}:${PORT}`)
+    const url = new URL(requestTarget, 'http://localhost')
     const resolvedPath = resolvePath(url.pathname)
     if (!resolvedPath.absolutePath) {
       res.statusCode = resolvedPath.statusCode
@@ -80,24 +80,18 @@ const server = createServer(async (req, res) => {
       return
     }
     let { absolutePath } = resolvedPath
+    let info = await stat(absolutePath)
+    if (info.isDirectory()) {
+      absolutePath = path.join(absolutePath, 'index.html')
+      info = await stat(absolutePath)
+    }
     absolutePath = await realpath(absolutePath)
     if (!isWithinRepoRoot(absolutePath)) {
       res.statusCode = 403
       res.end('Forbidden')
       return
     }
-
-    let info = await stat(absolutePath)
-    if (info.isDirectory()) {
-      absolutePath = path.join(absolutePath, 'index.html')
-      absolutePath = await realpath(absolutePath)
-      if (!isWithinRepoRoot(absolutePath)) {
-        res.statusCode = 403
-        res.end('Forbidden')
-        return
-      }
-      info = await stat(absolutePath)
-    }
+    info = await stat(absolutePath)
 
     if (!info.isFile()) {
       res.statusCode = 404
