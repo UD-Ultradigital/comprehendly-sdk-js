@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 const HOST = '127.0.0.1'
 const envPort = process.env.PORT
 const parsedPort = envPort === undefined ? Number.NaN : Number.parseInt(envPort, 10)
-const PORT = Number.isInteger(parsedPort) && parsedPort >= 0 && parsedPort <= 65535 ? parsedPort : 4173
+const PORT = Number.isInteger(parsedPort) && parsedPort >= 1 && parsedPort <= 65535 ? parsedPort : 4173
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 const contentTypes = {
@@ -76,5 +76,7 @@ const server = createServer(async (req, res) => {
 })
 
 server.listen(PORT, HOST, () => {
-  console.log(`http://${HOST}:${PORT}/demo/`)
+  const address = server.address()
+  const boundPort = typeof address === 'object' && address ? address.port : PORT
+  console.log(`http://${HOST}:${boundPort}/demo/`)
 })
