@@ -54,15 +54,14 @@ const server = createServer(async (req, res) => {
       return
     }
     let filePath = resolved
-    let stat = await fs.stat(filePath)
+    const stat = await fs.stat(filePath)
     if (stat.isDirectory()) {
       filePath = path.join(filePath, 'index.html')
-      stat = await fs.stat(filePath)
     }
     const body = await fs.readFile(filePath)
     const ext = path.extname(filePath).toLowerCase()
     send(res, 200, body, {
-      'Content-Length': stat.size,
+      'Content-Length': Buffer.byteLength(body),
       'Content-Type': contentTypes[ext] || 'application/octet-stream',
       'Cache-Control': 'no-store'
     })
